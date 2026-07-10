@@ -1,0 +1,41 @@
+# ==============================================================================
+# 1. Create Service for Backend
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service # Name for frontend API
+spec:
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 8080       # Port, open in cluster (for frontend)
+      targetPort: 8080 # Port, container work
+
+# ==============================================================================
+# 2. Create Deployment for Backend
+# ==============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+spec:
+  replicas: 2 # Implement 2 copies
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: mendhak/http-https-echo:30
+          ports:
+            - containerPort: 8080
+          env:
+            # request to DB from name of Service (mongodb-service)
+            - name: MONGO_URL
+              value: "mongodb://admin:secretpassword@mongodb-service:27017"
