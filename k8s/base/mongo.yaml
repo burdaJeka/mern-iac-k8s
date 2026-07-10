@@ -1,25 +1,27 @@
 # ==============================================================================
-# 1. Creating Service (Network access) for MongoDB
+# MongoDB Service (Internal DNS for inter-service communication)
 # ==============================================================================
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongodb-service # name of mongodb-service
+  name: mongodb
 spec:
   selector:
-    app: mongodb # POD tag
+    app: mongodb
   ports:
-    - protocol: TCP
-      port: 27017
+    - port: 27017
       targetPort: 27017
+
+---
 # ==============================================================================
-# 2. Creating Deployment for MongoDB
+# MongoDB StatefulSet (Ensures data persistence and stable network identity)
 # ==============================================================================
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: mongodb-deployment
+  name: mongodb
 spec:
+  serviceName: "mongodb"
   replicas: 1
   selector:
     matchLabels:
@@ -37,5 +39,22 @@ spec:
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
               value: "admin"
+            # Password is injected from a Kubernetes Secret, avoiding plain-text hardcoding
             - name: MONGO_INITDB_ROOT_PASSWORD
-              value: "secretpassword"
+              valueFrom:
+                secretKeyRef:
+                  name: mern-secrets
+                  key: db-password
+          # Mount the Persistent Volume to the container
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+  # Persistent Volume Claim Template for dynamic storage provisioning
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi

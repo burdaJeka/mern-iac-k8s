@@ -1,22 +1,22 @@
-# 1. Creating Service for Frontend (outside access)
+# ==============================================================================
+# Frontend Service (ClusterIP - Isolated from external access by default)
 # ==============================================================================
 apiVersion: v1
 kind: Service
 metadata:
   name: frontend-service
 spec:
-  type: NodePort # Warning! access outside cluster (from WSL)
+  type: ClusterIP
   selector:
     app: frontend
   ports:
     - protocol: TCP
       port: 80
       targetPort: 80
-      nodePort: 30080  # Hardcore port(30000-32767)
 
 ---
 # ==============================================================================
-# 2. Creating Deployment for Frontend
+# Frontend Deployment
 # ==============================================================================
 apiVersion: apps/v1
 kind: Deployment

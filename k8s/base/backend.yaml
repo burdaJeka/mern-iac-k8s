@@ -1,27 +1,27 @@
 # ==============================================================================
-# 1. Create Service for Backend
+# Backend Service (Internal communication)
 # ==============================================================================
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend-service # Name for frontend API
+  name: backend
 spec:
   selector:
     app: backend
   ports:
-    - protocol: TCP
-      port: 8080       # Port, open in cluster (for frontend)
-      targetPort: 8080 # Port, container work
+    - port: 80
+      targetPort: 80
 
+---
 # ==============================================================================
-# 2. Create Deployment for Backend
+# Backend API Deployment
 # ==============================================================================
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend-deployment
+  name: backend
 spec:
-  replicas: 2 # Implement 2 copies
+  replicas: 1
   selector:
     matchLabels:
       app: backend
@@ -34,8 +34,11 @@ spec:
         - name: backend
           image: mendhak/http-https-echo:30
           ports:
-            - containerPort: 8080
+            - containerPort: 80
           env:
-            # request to DB from name of Service (mongodb-service)
+            # MongoDB connection string injected from Kubernetes Secret
             - name: MONGO_URL
-              value: "mongodb://admin:secretpassword@mongodb-service:27017"
+              valueFrom:
+                secretKeyRef:
+                  name: mern-secrets
+                  key: mongo-url
