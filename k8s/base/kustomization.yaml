@@ -8,3 +8,4 @@ resources:
   - mongo.yaml
   - backend.yaml
   - frontend.yaml
+  - ingress.yaml

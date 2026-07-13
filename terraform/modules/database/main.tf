@@ -21,7 +21,6 @@ resource "docker_container" "mongodb" {
   image = docker_image.mongo.image_id
 
   networks_advanced {
-    # Використовуємо змінну, яку нам передадуть
     name = var.network_name
   }
 
@@ -32,7 +31,6 @@ resource "docker_container" "mongodb" {
 
   env = [
     "MONGO_INITDB_ROOT_USERNAME=admin",
-    # Використовуємо змінну для пароля
     "MONGO_INITDB_ROOT_PASSWORD=${var.db_password}"
   ]
 }
