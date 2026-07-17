@@ -1,5 +1,6 @@
 name: Infrastructure CI
 
+
 on:
   push:
     branches:
@@ -12,6 +13,7 @@ on:
       - master
 
 
+
 jobs:
 
   # ==================================================
@@ -19,8 +21,11 @@ jobs:
   # ==================================================
 
   docker-check:
+
     name: Docker Lint & Build
+
     runs-on: ubuntu-latest
+
 
     steps:
 
@@ -28,33 +33,39 @@ jobs:
         uses: actions/checkout@v4
 
 
+
       - name: Run Hadolint Backend Dockerfile
+        if: exists('backend/Dockerfile')
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: ./backend/Dockerfile
         continue-on-error: true
 
 
-      - name: Build Backend Image
+
+      - name: Build Backend Docker Image
         run: |
           if [ -f "./backend/Dockerfile" ]; then
             docker build \
               -t mern-backend:test \
               ./backend
           else
-            echo "Backend Dockerfile not found, skipping..."
+            echo "Backend Dockerfile not found - skipping"
           fi
 
 
-      - name: Build Frontend Image
+
+      - name: Build Frontend Docker Image
         run: |
           if [ -f "./frontend/Dockerfile" ]; then
             docker build \
               -t mern-frontend:test \
               ./frontend
           else
-            echo "Frontend Dockerfile not found, skipping..."
+            echo "Frontend Dockerfile not found - skipping"
           fi
+
+
 
 
 
@@ -63,8 +74,11 @@ jobs:
   # ==================================================
 
   terraform-validate:
+
     name: Terraform Check
+
     runs-on: ubuntu-latest
+
 
     defaults:
       run:
@@ -77,22 +91,28 @@ jobs:
         uses: actions/checkout@v4
 
 
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.5.0"
 
 
+
       - name: Terraform Init
         run: terraform init -backend=false
+
 
 
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
 
 
+
       - name: Terraform Validate
         run: terraform validate
+
+
 
 
 
@@ -101,20 +121,25 @@ jobs:
   # ==================================================
 
   kubernetes-validate:
+
     name: Kubernetes Manifest Check
+
     runs-on: ubuntu-latest
 
 
     steps:
 
+
       - name: Checkout Repository
         uses: actions/checkout@v4
+
 
 
       - name: Setup kubectl
         uses: azure/setup-kubectl@v4
         with:
           version: latest
+
 
 
       - name: Create Dummy Environment File
@@ -127,11 +152,14 @@ jobs:
           EOF
 
 
+
       - name: Validate Kustomize Build
         run: |
           kubectl kustomize k8s/overlays/local
 
 
-      - name: Validate Kubernetes Manifest
+
+      - name: Validate Kubernetes Manifests
         run: |
-          kubectl kustomize k8s/overlays/local | kubectl apply --dry-run=client -f -
+          kubectl kustomize k8s/overlays/local \
+          | kubectl apply --dry-run=client -f -
