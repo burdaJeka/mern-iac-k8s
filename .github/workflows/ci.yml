@@ -1,43 +1,106 @@
-docker-check:
-
-  name: Docker Lint & Build
-
-  runs-on: ubuntu-latest
+name: Infrastructure CI
 
 
-  steps:
+on:
+  push:
+    branches:
+      - main
+      - master
 
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-
-
-    - name: Run Hadolint Backend Dockerfile
-      run: |
-        if [ -f "./backend/Dockerfile" ]; then
-          docker run --rm \
-            -i hadolint/hadolint < ./backend/Dockerfile
-        else
-          echo "Backend Dockerfile not found - skipping"
-        fi
+  pull_request:
+    branches:
+      - main
+      - master
 
 
-    - name: Build Backend Docker Image
-      run: |
-        if [ -f "./backend/Dockerfile" ]; then
-          docker build \
-            -t mern-backend:test \
-            ./backend
-        else
-          echo "Backend Dockerfile not found - skipping"
-        fi
+jobs:
+
+  docker-check:
+    name: Docker Lint & Build
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
 
-    - name: Build Frontend Docker Image
-      run: |
-        if [ -f "./frontend/Dockerfile" ]; then
-          docker build \
-            -t mern-frontend:test \
-            ./frontend
-        else
-          echo "Frontend Dockerfile not found - skipping"
-        fi
+      - name: Build Backend Docker Image
+        run: |
+          if [ -f "./backend/Dockerfile" ]; then
+            docker build \
+              -t mern-backend:test \
+              ./backend
+          else
+            echo "Backend Dockerfile not found - skipping"
+          fi
+
+
+      - name: Build Frontend Docker Image
+        run: |
+          if [ -f "./frontend/Dockerfile" ]; then
+            docker build \
+              -t mern-frontend:test \
+              ./frontend
+          else
+            echo "Frontend Dockerfile not found - skipping"
+          fi
+
+
+
+  terraform-validate:
+
+    name: Terraform Check
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./terraform/environments/local
+
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.0"
+
+
+      - name: Terraform Init
+        run: terraform init -backend=false
+
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+
+      - name: Terraform Validate
+        run: terraform validate
+
+
+
+  kubernetes-validate:
+
+    name: Kubernetes Manifest Check
+    runs-on: ubuntu-latest
+
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: latest
+
+
+      - name: Validate Kustomize Build
+        run: |
+          kubectl kustomize k8s/overlays/local
