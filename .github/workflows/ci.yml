@@ -1,0 +1,80 @@
+==============================================================================
+
+Continuous Integration (CI) Pipeline
+
+This workflow automatically validates Terraform and Kubernetes configurations
+
+on every push or pull request to the main branch.
+
+==============================================================================
+
+name: Infrastructure CI
+
+on:
+push:
+branches: [ "main", "master" ]
+pull_request:
+branches: [ "main", "master" ]
+
+jobs:
+
+----------------------------------------------------------------------------
+
+Job 1: Terraform Validation
+
+----------------------------------------------------------------------------
+
+terraform-validate:
+name: Terraform Check
+runs-on: ubuntu-latest
+defaults:
+run:
+working-directory: ./terraform/environments/local
+
+steps:
+  - name: Checkout Repository
+    uses: actions/checkout@v4
+
+  - name: Setup Terraform
+    uses: hashicorp/setup-terraform@v3
+    with:
+      terraform_version: "1.5.0"
+
+  # Initialize without backend (we only need to download providers for validation)
+  - name: Terraform Init
+    run: terraform init -backend=false
+
+  # Check if the code is properly formatted
+  - name: Terraform Format Check
+    run: terraform fmt -check
+
+  # Validate syntax and logical errors
+  - name: Terraform Validate
+    run: terraform validate
+
+
+----------------------------------------------------------------------------
+
+Job 2: Kubernetes Configuration Validation
+
+----------------------------------------------------------------------------
+
+kubernetes-validate:
+name: Kubernetes Manifest Check
+runs-on: ubuntu-latest
+
+steps:
+  - name: Checkout Repository
+    uses: actions/checkout@v4
+
+  # Kustomize needs the .env file to build successfully, 
+  # but we don't store it in Git. So we create a dummy one for the test.
+  - name: Create Dummy Secrets File
+    run: |
+      mkdir -p k8s/overlays/local
+      echo "db-password=dummy" > k8s/overlays/local/.env
+      echo "mongo-url=mongodb://dummy" >> k8s/overlays/local/.env
+
+  # Verify that Kustomize can successfully render all manifests
+  - name: Validate Kustomize Build
+    run: kubectl kustomize k8s/overlays/local
