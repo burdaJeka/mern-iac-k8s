@@ -8,11 +8,7 @@ branches: [ "main", "master" ]
 
 jobs:
 
-----------------------------------------------------------------------------
-
 Job 1: Terraform Validation
-
-----------------------------------------------------------------------------
 
 terraform-validate:
 name: Terraform Check
@@ -38,12 +34,7 @@ uses: actions/checkout@v4
   - name: Terraform Validate
     run: terraform validate
 
-
-----------------------------------------------------------------------------
-
 Job 2: Kubernetes Configuration Validation
-
-----------------------------------------------------------------------------
 
 kubernetes-validate:
 name: Kubernetes Manifest Check
