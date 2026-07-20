@@ -440,19 +440,5 @@ terraform destroy -var-file="secret.tfvars"
 
 ---
 
-# 👨‍💻 About
-
-This project was created as a **DevOps portfolio project** to demonstrate practical experience with:
-
-- Infrastructure as Code
-- Docker
-- Kubernetes
-- Terraform
-- Kustomize
-- GitHub Actions
-- CI/CD Automation
-- Cloud-Native Infrastructure
-
----
 
 ## ⭐ If you found this project useful, consider giving it a star!
