@@ -1,92 +1,127 @@
 # 🚀 MERN Stack DevOps Infrastructure
 
-<p align="center">
+![Terraform](https://img.shields.io/badge/Terraform-IaC-623CE4?logo=terraform&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Containers-2496ED?logo=docker&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-Orchestration-326CE5?logo=kubernetes&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI/CD-2088FF?logo=githubactions&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-![Terraform](https://img.shields.io/badge/Terraform-IaC-623CE4?logo=terraform\&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Containerization-2496ED?logo=docker\&logoColor=white)
-![Kubernetes](https://img.shields.io/badge/Kubernetes-Orchestration-326CE5?logo=kubernetes\&logoColor=white)
-![Minikube](https://img.shields.io/badge/Minikube-Local%20Cluster-2C3E50?logo=kubernetes)
-![Kustomize](https://img.shields.io/badge/Kustomize-Kubernetes%20Management-326CE5)
+Infrastructure and deployment configuration for a **MERN Stack** application built with modern **DevOps**, **Infrastructure as Code**, and **Cloud-Native** practices.
 
-</p>
-
----
-
-## 📌 Overview
-
-This repository contains infrastructure and deployment configurations for a **MERN Stack application** built using modern DevOps and cloud-native practices.
-
-The project demonstrates a complete local Kubernetes deployment workflow with Infrastructure as Code, container orchestration, and secure configuration management.
-
-### Key objectives:
-
-* 🏗️ Infrastructure as Code using **Terraform**
-* 🧩 Modular infrastructure architecture
-* 📦 Containerized application delivery using **Docker**
-* ☸️ Kubernetes orchestration and workload management
-* 💾 Stateful database deployment
-* 🌐 Kubernetes networking and Ingress configuration
-* 🔐 Secure secrets management using **Kustomize overlays**
-* 🔄 Reproducible local development environment
-
-The infrastructure follows production-oriented DevOps principles:
-
-> **Declarative configuration · Automation · Modularity · Environment isolation**
+The project demonstrates a complete local Kubernetes deployment workflow, including infrastructure provisioning, container orchestration, secrets management, and CI/CD automation.
 
 ---
 
-# 🏗️ Architecture
+# 📑 Table of Contents
 
-The application is deployed using a classic **3-tier architecture**:
+- [Overview](#-overview)
+- [Architecture](#-architecture)
+- [Technology Stack](#-technology-stack)
+- [Repository Structure](#-repository-structure)
+- [CI/CD Pipeline](#-cicd-pipeline)
+- [Secrets Management](#-secrets-management)
+- [Deployment Guide](#-deployment-guide)
+- [Validation](#-validation)
+- [Local Access](#-local-access)
+- [Deployment Workflow](#-deployment-workflow)
+- [Cleanup](#-cleanup)
+- [DevOps Concepts](#-devops-concepts-demonstrated)
+- [Future Improvements](#-future-improvements)
+- [Project Status](#-project-status)
+
+---
+
+# 📌 Overview
+
+This repository demonstrates a production-oriented DevOps workflow for deploying a MERN Stack application locally on Kubernetes.
+
+## Key Features
+
+- 🏗 Infrastructure as Code using Terraform
+- 📦 Docker containerization
+- ☸ Kubernetes orchestration
+- 💾 MongoDB StatefulSet deployment
+- 🌐 Kubernetes Ingress networking
+- 🔐 Secure secret management with Kustomize
+- 🔄 Reproducible local development environment
+- 🤖 GitHub Actions CI/CD pipeline
+- 🧩 Modular infrastructure architecture
+
+### DevOps Principles
+
+- Declarative Infrastructure
+- Automation
+- Modularity
+- Environment Isolation
+- Reproducibility
+
+---
+
+# 🏗 Architecture
 
 ```text
-                         User
-                           |
-                           |
-                    ┌─────────────┐
-                    │   Ingress   │
-                    └──────┬──────┘
-                           |
-                           ▼
-                    ┌─────────────┐
-                    │  Frontend   │
-                    │    Nginx    │
-                    └──────┬──────┘
-                           |
-                           ▼
-                    ┌─────────────┐
-                    │  Backend    │
-                    │ Node.js API │
-                    └──────┬──────┘
-                           |
-                           ▼
-                    ┌─────────────┐
-                    │  MongoDB    │
-                    │ StatefulSet │
-                    └─────────────┘
+                     User
+                       │
+                       ▼
+               ┌─────────────────┐
+               │ Kubernetes       │
+               │ Ingress          │
+               └────────┬─────────┘
+                        │
+                        ▼
+               ┌─────────────────┐
+               │ Frontend        │
+               │ Nginx           │
+               └────────┬─────────┘
+                        │
+                        ▼
+               ┌─────────────────┐
+               │ Backend API     │
+               │ Node.js         │
+               └────────┬─────────┘
+                        │
+                        ▼
+               ┌─────────────────┐
+               │ MongoDB         │
+               │ StatefulSet     │
+               └─────────────────┘
 ```
 
 ---
 
 # 🧰 Technology Stack
 
-| Technology | Role                                |
-| ---------- | ----------------------------------- |
-| Terraform  | Infrastructure provisioning         |
-| Docker     | Container runtime                   |
-| Kubernetes | Container orchestration             |
-| Minikube   | Local Kubernetes cluster            |
-| Kustomize  | Kubernetes configuration management |
-| Nginx      | Frontend web server                 |
-| Node.js    | Backend API                         |
-| MongoDB    | Persistent database                 |
+| Technology | Purpose |
+|------------|---------|
+| Terraform | Infrastructure as Code |
+| Docker | Containerization |
+| Kubernetes | Container Orchestration |
+| Minikube | Local Kubernetes Cluster |
+| Kustomize | Kubernetes Configuration Management |
+| GitHub Actions | CI/CD |
+| Docker Hub | Container Registry |
+| Node.js | Backend API |
+| Nginx | Frontend Web Server |
+| MongoDB | Database |
 
 ---
 
 # 📂 Repository Structure
 
-```bash
+```text
 .
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+│
+├── backend/
+│   ├── Dockerfile
+│   └── package.json
+│
+├── frontend/
+│   ├── Dockerfile
+│   └── package.json
+│
 ├── k8s/
 │   ├── base/
 │   │   ├── backend.yaml
@@ -105,29 +140,60 @@ The application is deployed using a classic **3-tier architecture**:
     │   └── local/
     │
     └── modules/
-        ├── frontend/
         ├── backend/
+        ├── frontend/
         └── database/
 ```
 
 ---
 
-# 🔐 Secrets Management
+# 🤖 CI/CD Pipeline
 
-Sensitive information is **never stored inside Git**.
+The project uses **GitHub Actions** to automate infrastructure validation and Docker image builds.
 
-Secrets are injected locally during deployment using environment-specific configuration.
+Pipeline triggers:
 
-| Component  | Secret Source   |
-| ---------- | --------------- |
-| Terraform  | `secret.tfvars` |
-| Kubernetes | `.env`          |
+- Push to `main`
+- Pull Request to `main`
+
+## Pipeline Flow
+
+```mermaid
+flowchart LR
+
+A[Git Push]
+--> B[GitHub Actions]
+
+B --> C[Terraform Validate]
+B --> D[Kubernetes Validation]
+
+C --> E[Build Docker Images]
+D --> E
+
+E --> F[(Docker Hub)]
+```
+
+Pipeline stages:
+
+- Terraform Format
+- Terraform Validate
+- Kubernetes Manifest Validation
+- Docker Build
+- Docker Image Push
 
 ---
 
-## Terraform Secrets
+# 🔐 Secrets Management
 
-Create local variables:
+Sensitive data is **never committed to Git**.
+
+| Component | Secret Source |
+|------------|---------------|
+| Terraform | `secret.tfvars` |
+| Kubernetes | `.env` |
+| CI/CD | GitHub Secrets |
+
+## Terraform Secrets
 
 ```bash
 cd terraform/environments/local
@@ -145,10 +211,8 @@ db_password = "YourSuperSecretPassword123"
 
 ## Kubernetes Secrets
 
-Create local environment configuration:
-
 ```bash
-cd ../../../k8s/overlays/local
+cd k8s/overlays/local
 
 touch .env
 ```
@@ -161,20 +225,20 @@ db-password=YourSuperSecretPassword123
 mongo-url=mongodb://admin:YourSuperSecretPassword123@mongodb:27017
 ```
 
-> ⚠️ These files are local-only and excluded from version control.
+> Both files are excluded from version control using `.gitignore`.
 
 ---
 
-# ⚙️ Infrastructure Deployment
+# ⚙️ Deployment Guide
 
 ## Requirements
 
 Install:
 
-* Docker
-* Terraform CLI
-* kubectl
-* Minikube
+- Docker
+- Terraform
+- kubectl
+- Minikube
 
 Verify installation:
 
@@ -187,95 +251,90 @@ minikube version
 
 ---
 
-# 🚀 Deployment Process
-
-## 1. Provision Infrastructure with Terraform
-
-Initialize Terraform:
+## 1. Provision Infrastructure
 
 ```bash
 cd terraform/environments/local
 
 terraform init
-```
 
-Deploy infrastructure:
-
-```bash
-terraform apply \
--var-file="secret.tfvars"
+terraform apply -var-file="secret.tfvars"
 ```
 
 Terraform provisions:
 
-* Docker resources
-* Networks
-* Persistent volumes
-* Required infrastructure dependencies
+- Docker resources
+- Networks
+- Persistent volumes
+- Infrastructure dependencies
 
 ---
 
-## 2. Start Kubernetes Cluster
-
-Start Minikube:
+## 2. Start Kubernetes
 
 ```bash
 minikube start --driver=docker
-```
 
-Enable Ingress controller:
-
-```bash
 minikube addons enable ingress
 ```
 
 ---
 
-## 3. Deploy Kubernetes Resources
-
-Deploy application stack:
+## 3. Deploy Application
 
 ```bash
 kubectl apply -k k8s/overlays/local
 ```
 
-Kustomize manages:
+Kustomize deploys:
 
-* Deployments
-* StatefulSets
-* Services
-* Ingress
-* Secrets
+- Deployments
+- StatefulSets
+- Services
+- Ingress
+- Secrets
 
 ---
 
 # 🔎 Validation
 
-Check workloads:
+Check Pods:
 
 ```bash
 kubectl get pods
 ```
 
-Check services, ingress and secrets:
+Check Services:
 
 ```bash
-kubectl get svc,ingress,secrets
+kubectl get svc
+```
+
+Check Ingress:
+
+```bash
+kubectl get ingress
+```
+
+Check Secrets:
+
+```bash
+kubectl get secrets
 ```
 
 ---
 
-# 🌐 Local Application Access
+# 🌐 Local Access
 
-Get Minikube IP:
+Retrieve Minikube IP:
 
 ```bash
 minikube ip
 ```
 
-Configure local DNS mapping.
+Update your hosts file.
 
-### Linux / WSL
+### Linux / macOS
 
 ```bash
 sudo nano /etc/hosts
@@ -283,9 +342,7 @@ sudo nano /etc/hosts
 
 ### Windows
 
-Open as Administrator:
-
-```text
+```
 C:\Windows\System32\drivers\etc\hosts
 ```
 
@@ -295,9 +352,9 @@ Add:
 <MINIKUBE_IP> mern-app.local
 ```
 
-Open application:
+Open:
 
-```text
+```
 http://mern-app.local
 ```
 
@@ -308,28 +365,23 @@ http://mern-app.local
 ```mermaid
 flowchart LR
 
-A[Source Code] --> B[Terraform]
+A[Docker Hub Images]
+--> B[Minikube]
 
-B --> C[Docker Environment]
+B --> C[Kustomize]
 
-C --> D[Minikube Cluster]
+C --> D[Kubernetes]
 
-D --> E[Kustomize]
-
-E --> F[Kubernetes Resources]
-
-F --> G[Frontend]
-
-F --> H[Backend API]
-
-F --> I[MongoDB StatefulSet]
+D --> E[Frontend]
+D --> F[Backend API]
+D --> G[(MongoDB)]
 ```
 
 ---
 
 # 🧹 Cleanup
 
-## Remove Kubernetes resources
+Remove Kubernetes resources:
 
 ```bash
 kubectl delete -k k8s/overlays/local
@@ -337,58 +389,70 @@ kubectl delete -k k8s/overlays/local
 minikube stop
 ```
 
----
-
-## Destroy Terraform infrastructure
+Destroy Terraform infrastructure:
 
 ```bash
 cd terraform/environments/local
 
-terraform destroy \
--var-file="secret.tfvars"
+terraform destroy -var-file="secret.tfvars"
 ```
 
 ---
 
 # ✅ DevOps Concepts Demonstrated
 
-* [x] Infrastructure as Code (Terraform)
-* [x] Modular Terraform architecture
-* [x] Containerized application delivery
-* [x] Kubernetes workload management
-* [x] Stateful services
-* [x] Declarative configuration
-* [x] Kubernetes networking & Ingress
-* [x] Secure secret management
-* [x] Environment-specific overlays with Kustomize
+- ✅ Infrastructure as Code (Terraform)
+- ✅ Modular Terraform Architecture
+- ✅ Docker Containerization
+- ✅ Kubernetes Workload Management
+- ✅ Stateful Services
+- ✅ Declarative Infrastructure
+- ✅ Kubernetes Networking
+- ✅ Ingress Controller
+- ✅ Secrets Management
+- ✅ Kustomize Overlays
+- ✅ GitHub Actions CI/CD
+- ✅ Docker Image Build & Push
 
 ---
 
-# 🔜 Future Improvements
+# 🚀 Future Improvements
 
-Planned improvements:
-
-* [ ] GitHub Actions CI/CD pipeline
-* [ ] Automated Terraform validation
-* [ ] Container image build automation
-* [ ] Deployment automation
-* [ ] Monitoring and observability stack
+- [ ] GitOps deployment (ArgoCD / Flux)
+- [ ] Prometheus & Grafana monitoring
+- [ ] Helm Charts
+- [ ] Multi-environment deployments
+- [ ] Production-ready cloud deployment (AWS / Azure / GCP)
 
 ---
 
-# 📌 Project Status
+# 📊 Project Status
 
-| Component                | Status        |
-| ------------------------ | ------------- |
-| Terraform Infrastructure | ✅ Implemented |
-| Docker Environment       | ✅ Implemented |
-| Kubernetes Deployment    | ✅ Implemented |
-| Kustomize Configuration  | ✅ Implemented |
-| Secrets Management       | ✅ Implemented |
-| CI/CD Pipeline           | 🚧 Planned    |
+| Component | Status |
+|------------|--------|
+| Terraform Infrastructure | ✅ |
+| Docker | ✅ |
+| Kubernetes | ✅ |
+| Kustomize | ✅ |
+| Secrets Management | ✅ |
+| CI/CD | ✅ |
+| Docker Build & Push | ✅ |
 
 ---
 
 # 👨‍💻 About
 
-DevOps portfolio project demonstrating modern infrastructure automation, Kubernetes deployment practices, and cloud-native engineering principles.
+This project was created as a **DevOps portfolio project** to demonstrate practical experience with:
+
+- Infrastructure as Code
+- Docker
+- Kubernetes
+- Terraform
+- Kustomize
+- GitHub Actions
+- CI/CD Automation
+- Cloud-Native Infrastructure
+
+---
+
+## ⭐ If you found this project useful, consider giving it a star!
