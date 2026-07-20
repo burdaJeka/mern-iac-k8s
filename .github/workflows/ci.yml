@@ -1,71 +1,102 @@
-name: Infrastructure CI
+name: Infrastructure & Application CI/CD
 
 on:
-  push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
+push:
+branches: [ "main", "master" ]
+pull_request:
+branches: [ "main", "master" ]
 
 jobs:
-  docker-check:
-    name: Docker Lint & Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
 
-      - name: Run Hadolint
-        uses: hadolint/hadolint-action@v3.1.0
-        with:
-          dockerfile: ./backend/Dockerfile
-        continue-on-error: true
+----------------------------------------------------------------------------
 
-      - name: Build Backend Image
-        run: |
-          mkdir -p backend && touch backend/Dockerfile
-          docker build -t mern-backend:test ./backend || echo "Skipping backend build"
+Job 1: Terraform Validation
 
-      - name: Build Frontend Image
-        run: |
-          mkdir -p frontend && touch frontend/Dockerfile
-          docker build -t mern-frontend:test ./frontend || echo "Skipping frontend build"
+----------------------------------------------------------------------------
 
-  terraform-validate:
-    name: Terraform Check
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./terraform/environments/local
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+terraform-validate:
+name: Terraform Check
+runs-on: ubuntu-latest
+defaults:
+run:
+working-directory: ./terraform/environments/local
+steps:
+- name: Checkout Repository
+uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.5.0"
+  - name: Setup Terraform
+    uses: hashicorp/setup-terraform@v3
+    with:
+      terraform_version: "1.5.0"
 
-      - name: Terraform Init
-        run: terraform init -backend=false
+  - name: Terraform Init
+    run: terraform init -backend=false
 
-      - name: Terraform Format Check
-        run: terraform fmt -check
+  - name: Terraform Format Check
+    run: terraform fmt -check
 
-      - name: Terraform Validate
-        run: terraform validate
+  - name: Terraform Validate
+    run: terraform validate
 
-  kubernetes-validate:
-    name: Kubernetes Manifest Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
 
-      - name: Create Dummy Secrets File
-        run: |
-          mkdir -p k8s/overlays/local
-          echo "db-password=dummy" > k8s/overlays/local/.env
-          echo "mongo-url=mongodb://dummy" >> k8s/overlays/local/.env
+----------------------------------------------------------------------------
 
-      - name: Validate Kustomize Build
-        run: kubectl kustomize k8s/overlays/local
+Job 2: Kubernetes Configuration Validation
+
+----------------------------------------------------------------------------
+
+kubernetes-validate:
+name: Kubernetes Manifest Check
+runs-on: ubuntu-latest
+steps:
+- name: Checkout Repository
+uses: actions/checkout@v4
+
+  - name: Create Dummy Secrets File
+    run: |
+      mkdir -p k8s/overlays/local
+      echo "db-password=dummy" > k8s/overlays/local/.env
+      echo "mongo-url=mongodb://dummy" >> k8s/overlays/local/.env
+
+  - name: Validate Kustomize Build
+    run: kubectl kustomize k8s/overlays/local
+
+
+----------------------------------------------------------------------------
+
+Job 3: Docker Build & Push (CD Phase)
+
+----------------------------------------------------------------------------
+
+docker-build:
+name: Build & Push Docker Images
+runs-on: ubuntu-latest
+needs: [terraform-validate, kubernetes-validate]
+steps:
+- name: Checkout Repository
+uses: actions/checkout@v4
+
+  - name: Set up Docker Buildx
+    uses: docker/setup-buildx-action@v3
+
+  - name: Log in to Docker Hub
+    uses: docker/login-action@v3
+    with:
+      username: ${{ secrets.DOCKERHUB_USERNAME }}
+      password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  - name: Build and Push Backend
+    uses: docker/build-push-action@v5
+    with:
+      context: ./backend
+      push: ${{ github.ref == 'refs/heads/main' }}
+      tags: ${{ secrets.DOCKERHUB_USERNAME }}/mern-backend:latest
+
+  - name: Build and Push Frontend
+    uses: docker/build-push-action@v5
+    with:
+      context: ./frontend
+      push: ${{ github.ref == 'refs/heads/main' }}
+      tags: ${{ secrets.DOCKERHUB_USERNAME }}/mern-frontend:latest
+
+
